@@ -1,0 +1,12 @@
+// firebase/auth exports getReactNativePersistence from its React Native bundle,
+// but TypeScript resolves the web typings. Declare it here.
+import 'firebase/auth';
+import type { Persistence } from 'firebase/auth';
+
+declare module 'firebase/auth' {
+  export function getReactNativePersistence(storage: {
+    getItem(key: string): Promise<string | null>;
+    setItem(key: string, value: string): Promise<void>;
+    removeItem(key: string): Promise<void>;
+  }): Persistence;
+}

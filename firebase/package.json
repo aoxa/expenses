@@ -1,0 +1,18 @@
+{
+  "name": "comprobantes-firebase",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:rules": "firebase emulators:exec --only firestore --project demo-comprobantes \"node --test tests/\"",
+    "emulators": "firebase emulators:start --project demo-comprobantes",
+    "deploy:rules": "firebase deploy --only firestore",
+    "test:functions": "npm --prefix functions test",
+    "test:e2e": "EXPO_PUSH_URL=http://127.0.0.1:9988/push firebase emulators:exec --only firestore,functions --project demo-comprobantes \"node --test e2e/\"",
+    "deploy": "firebase deploy --only firestore,functions"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.0.0",
+    "firebase-tools": "^15.34.0"
+  }
+}

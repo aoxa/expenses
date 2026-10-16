@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// Server-side enforcement of calendar permissions. Keep in sync with
+// src/lib/permissions.ts (which only drives the UI).
+//
+//   owner : read, add/delete any expense, manage sharing
+//   write : read, add expenses, delete own expenses
+//   read  : read only
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // members is a flat map { uid: 'owner' | 'read' | 'write' } so rules can
+    // validate every role at once (rules can't loop over nested objects).
+    function roleOf(calendar) {
+      return calendar.members.get(request.auth.uid, '');
+    }
+
+    match /users/{uid} {
+      // Any signed-in user can look up profiles to match contacts.
+      // For production, consider moving the lookup to a Cloud Function so
+      // emails/phones aren't readable by every user.
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['displayName', 'emailLower', 'phones'])
+        && request.resource.data.displayName is string
+        && request.resource.data.emailLower == request.auth.token.email.lower()
+        && request.resource.data.phones is list
+        && request.resource.data.phones.size() <= 5;
+
+      // Expo push tokens for this user's devices. Private: only the user
+      // reads/writes them; the Cloud Function uses the Admin SDK.
+      match /pushTokens/{token} {
+        allow read, delete: if signedIn() && request.auth.uid == uid;
+        allow create, update: if signedIn() && request.auth.uid == uid
+          && token.matches('^Expo(nent)?PushToken\\[.+\\]$')
+          && request.resource.data.keys().hasOnly(['platform', 'updatedAt'])
+          && request.resource.data.platform in ['android', 'ios']
+          && request.resource.data.updatedAt == request.time;
+      }
+    }
+
+    match /calendars/{calendarId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.memberIds;
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.memberIds == [request.auth.uid]
+        && request.resource.data.members.keys().hasOnly([request.auth.uid])
+        && request.resource.data.members[request.auth.uid] == 'owner'
+        && request.resource.data.memberNames.keys().hasOnly([request.auth.uid])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.currency in ['ARS', 'USD'];
+
+      // Only the owner can rename or change sharing. The owner can't change
+      // ownership or their own role, and memberIds must mirror members.
+      allow update: if signedIn()
+        && roleOf(resource.data) == 'owner'
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.currency in ['ARS', 'USD']
+        && request.resource.data.members[resource.data.ownerId] == 'owner'
+        // Exactly one 'owner' (the ownerId); everyone else is 'read' or 'write'.
+        && request.resource.data.members.values().removeAll(['read', 'write']) == ['owner']
+        && request.resource.data.memberIds.toSet() == request.resource.data.members.keys().toSet()
+        && request.resource.data.memberNames.keys().toSet() == request.resource.data.members.keys().toSet();
+
+      allow delete: if signedIn() && roleOf(resource.data) == 'owner';
+
+      match /expenses/{expenseId} {
+        function calendar() {
+          return get(/databases/$(database)/documents/calendars/$(calendarId)).data;
+        }
+
+        function myRole() {
+          return roleOf(calendar());
+        }
+
+        function validExpense(data) {
+          return data.keys().hasOnly(['date', 'amountCents', 'description', 'category', 'createdBy', 'createdByName', 'createdAt'])
+            && data.date is string && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && data.amountCents is int && data.amountCents > 0
+            && data.description is string && data.description.size() <= 200
+            && data.category is string && data.category.size() <= 50;
+        }
+
+        allow read: if signedIn() && myRole() != '';
+
+        allow create: if signedIn()
+          && myRole() in ['owner', 'write']
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && validExpense(request.resource.data);
+
+        allow update: if signedIn()
+          && (myRole() == 'owner' || (myRole() == 'write' && resource.data.createdBy == request.auth.uid))
+          && request.resource.data.createdBy == resource.data.createdBy
+          && validExpense(request.resource.data);
+
+        allow delete: if signedIn()
+          && (myRole() == 'owner' || (myRole() == 'write' && resource.data.createdBy == request.auth.uid));
+      }
+    }
+  }
+}
