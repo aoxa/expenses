@@ -121,7 +121,7 @@ export default function CalendarScreen() {
           <View style={styles.access}>
             <Button
               variant="secondary"
-              title={`Quitar acceso (${sharedWith} ${sharedWith === 1 ? 'persona' : 'personas'})`}
+              title={`Gestionar acceso (${sharedWith} ${sharedWith === 1 ? 'persona' : 'personas'})`}
               onPress={() => router.push({ pathname: '/calendar/[id]/access', params: { id } })}
             />
           </View>
@@ -139,7 +139,7 @@ export default function CalendarScreen() {
 
 const styles = StyleSheet.create({
   role: { color: colors.muted, marginBottom: spacing.sm },
-  monthHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
+  monthHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
   monthTitle: { fontSize: 18, fontWeight: '600', color: colors.text, textTransform: 'capitalize' },
   arrow: { fontSize: 28, color: colors.primary, paddingHorizontal: spacing.md },
   access: { marginTop: spacing.md },

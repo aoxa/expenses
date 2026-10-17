@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '@/components/theme';
 import { Button, EmptyState, Field, Loading } from '@/components/ui';
@@ -16,6 +17,7 @@ const CATEGORIES = ['Comida', 'Transporte', 'Hogar', 'Salud', 'Ocio', 'Otros'];
 export default function AddExpenseScreen() {
   const { id, date = today() } = useLocalSearchParams<{ id: string; date?: string }>();
   const user = useCurrentUser();
+  const insets = useSafeAreaInsets();
   const { role, loading } = useCalendar(id);
 
   const [amount, setAmount] = useState('');
@@ -46,7 +48,10 @@ export default function AddExpenseScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={[styles.container, { paddingBottom: spacing.md + insets.bottom }]}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.date}>{formatLongDate(date)}</Text>
 
       <Field

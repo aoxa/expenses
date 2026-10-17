@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '@/components/theme';
 import { Button, Field } from '@/components/ui';
@@ -16,6 +17,8 @@ type FieldName = 'email' | 'password' | 'displayName' | 'phone';
 type Errors = Partial<Record<FieldName, string | null>>;
 
 export default function SignInScreen() {
+  // No header on this screen, so it has to clear both the status and navigation bars.
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,8 +69,14 @@ export default function SignInScreen() {
 
   return (
     <KeyboardAvoidingView behavior="height" style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Comprobantes</Text>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          { paddingTop: spacing.lg + insets.top, paddingBottom: spacing.lg + insets.bottom },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.title}>Gastario</Text>
         <Text style={styles.subtitle}>Registrá tus gastos día a día y compartilos con quien quieras.</Text>
 
         {isSignUp && (

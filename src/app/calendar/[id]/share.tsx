@@ -1,8 +1,7 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, Share, StyleSheet, Text, TextInput } from 'react-native';
 
-import { confirmRevokeAccess } from '@/components/confirmRevokeAccess';
 import { PermissionPicker } from '@/components/PermissionPicker';
 import { colors, spacing } from '@/components/theme';
 import { EmptyState, Loading, Screen } from '@/components/ui';
@@ -38,9 +37,7 @@ export default function ShareScreen() {
   if (loading) return <Loading />;
   if (!calendar || !canManageSharing(role)) return <EmptyState message="Solo el propietario puede compartir este calendario." />;
 
-  const members = Object.entries(calendar.members)
-    .filter(([uid]) => uid !== user.uid)
-    .map(([uid, memberRole]) => ({ uid, role: memberRole as SharePermission, name: calendar.memberNames[uid] ?? uid }));
+  const sharedWith = calendar.memberIds.filter((uid) => uid !== user.uid).length;
 
   const shareWith = async (contact: DeviceContact) => {
     setBusyContactId(contact.id);
@@ -54,7 +51,7 @@ export default function ShareScreen() {
             text: 'Invitar',
             onPress: () =>
               Share.share({
-                message: `Quiero compartir con vos mis gastos de "${calendar.name}". Instalá Comprobantes y registrate con este teléfono o email.`,
+                message: `Quiero compartir con vos mis gastos de "${calendar.name}". Instalá Gastario y registrate con este teléfono o email.`,
               }),
           },
         ]);
@@ -73,24 +70,25 @@ export default function ShareScreen() {
     }
   };
 
-  const changeRole = (uid: string, displayName: string, next: SharePermission) =>
-    shareCalendar(id, { uid, displayName }, next).catch((e) => Alert.alert('Error', String(e)));
-
   return (
     <Screen>
-      <Text style={styles.section}>Personas con acceso</Text>
-      {members.length === 0 ? (
-        <Text style={styles.muted}>Nadie todavía.</Text>
+      {sharedWith === 0 ? (
+        <>
+          <Text style={styles.section}>Personas con acceso</Text>
+          <Text style={styles.muted}>Nadie todavía.</Text>
+        </>
       ) : (
-        members.map((m) => (
-          <View key={m.uid} style={styles.member}>
-            <Text style={styles.memberName}>{m.name}</Text>
-            <PermissionPicker value={m.role} onChange={(p) => changeRole(m.uid, m.name, p)} />
-            <Pressable onPress={() => confirmRevokeAccess(id, m.uid, m.name)} hitSlop={8}>
-              <Text style={styles.remove}>Quitar acceso</Text>
-            </Pressable>
-          </View>
-        ))
+        <>
+          <Pressable
+            style={styles.sectionToggle}
+            onPress={() => router.push({ pathname: '/calendar/[id]/access', params: { id } })}
+            accessibilityRole="link"
+            hitSlop={8}
+          >
+            <Text style={[styles.section, styles.sectionInToggle]}>Personas con acceso ({sharedWith})</Text>
+            <Text style={styles.toggleHint}>Ver ›</Text>
+          </Pressable>
+        </>
       )}
 
       <Text style={styles.section}>Compartir con un contacto</Text>
@@ -127,10 +125,16 @@ export default function ShareScreen() {
 
 const styles = StyleSheet.create({
   section: { fontSize: 13, fontWeight: '700', color: colors.muted, textTransform: 'uppercase', marginTop: spacing.md, marginBottom: spacing.sm },
+  sectionToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  sectionInToggle: { marginTop: 0, marginBottom: 0 },
+  toggleHint: { color: colors.primary, fontWeight: '600' },
   muted: { color: colors.muted },
-  member: { backgroundColor: colors.surface, borderRadius: 8, padding: spacing.md, marginBottom: spacing.sm, gap: spacing.sm },
-  memberName: { fontSize: 16, fontWeight: '600', color: colors.text },
-  remove: { color: colors.danger },
   search: {
     backgroundColor: colors.surface,
     borderWidth: 1,

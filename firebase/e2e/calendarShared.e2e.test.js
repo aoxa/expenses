@@ -44,7 +44,7 @@ before(async () => {
     });
   });
   await new Promise((r) => server.listen(PORT, '127.0.0.1', r));
-  env = await initializeTestEnvironment({ projectId: 'demo-comprobantes' });
+  env = await initializeTestEnvironment({ projectId: 'demo-gastario' });
 });
 
 after(async () => {

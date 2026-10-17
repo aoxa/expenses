@@ -40,7 +40,7 @@ const expense = (uid, extra = {}) => ({
 
 before(async () => {
   env = await initializeTestEnvironment({
-    projectId: 'demo-comprobantes',
+    projectId: 'demo-gastario',
     firestore: { rules: readFileSync(new URL('../firestore.rules', import.meta.url), 'utf8') },
   });
 });

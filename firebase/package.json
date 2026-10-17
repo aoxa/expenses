@@ -1,13 +1,13 @@
 {
-  "name": "comprobantes-firebase",
+  "name": "gastario-firebase",
   "private": true,
   "type": "module",
   "scripts": {
-    "test:rules": "firebase emulators:exec --only firestore --project demo-comprobantes \"node --test tests/\"",
-    "emulators": "firebase emulators:start --project demo-comprobantes",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-gastario \"node --test tests/\"",
+    "emulators": "firebase emulators:start --project demo-gastario",
     "deploy:rules": "firebase deploy --only firestore",
     "test:functions": "npm --prefix functions test",
-    "test:e2e": "EXPO_PUSH_URL=http://127.0.0.1:9988/push firebase emulators:exec --only firestore,functions --project demo-comprobantes \"node --test e2e/\"",
+    "test:e2e": "EXPO_PUSH_URL=http://127.0.0.1:9988/push firebase emulators:exec --only firestore,functions --project demo-gastario \"node --test e2e/\"",
     "deploy": "firebase deploy --only firestore,functions"
   },
   "devDependencies": {

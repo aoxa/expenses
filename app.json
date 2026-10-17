@@ -1,17 +1,18 @@
 {
   "expo": {
-    "name": "Comprobantes",
-    "slug": "comprobantes",
+    "name": "Gastario",
+    "slug": "gastario",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "ar.zuppelli.expenses"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E3F1E4",
+        "backgroundColor": "#2D8C62",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -51,7 +52,7 @@
         }
       ]
     ],
-    "scheme": "comprobantes",
+    "scheme": "gastario",
     "experiments": {
       "typedRoutes": true
     },

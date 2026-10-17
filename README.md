@@ -1,4 +1,4 @@
-# Comprobantes
+# Gastario
 
 An Android app (React Native + Expo) for logging expenses day by day in a calendar and sharing that calendar with people from your contact list.
 

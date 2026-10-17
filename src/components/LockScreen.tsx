@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { authenticate } from '@/lib/biometrics';
 import { signOut } from '@/services/auth';
@@ -8,13 +9,14 @@ import { Button } from './ui';
 
 /** Shown on app start while biometric unlock is enabled. */
 export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
+  const insets = useSafeAreaInsets();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
 
   const unlock = useCallback(async () => {
     setBusy(true);
     try {
-      if (await authenticate('Desbloqueá Comprobantes')) onUnlock();
+      if (await authenticate('Desbloqueá Gastario')) onUnlock();
       else setFailed(true);
     } catch {
       setFailed(true);
@@ -32,11 +34,13 @@ export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   }, [unlock]);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { paddingTop: spacing.lg + insets.top, paddingBottom: spacing.lg + insets.bottom }]}
+    >
       <Text style={styles.icon} accessibilityElementsHidden>
         🔒
       </Text>
-      <Text style={styles.title}>Comprobantes</Text>
+      <Text style={styles.title}>Gastario</Text>
       <Text style={styles.subtitle}>
         {failed ? 'No se pudo verificar tu huella.' : 'Usá tu huella para ingresar.'}
       </Text>

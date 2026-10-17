@@ -8,11 +8,17 @@ import {
   View,
   type TextInputProps,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, spacing } from './theme';
 
+/**
+ * Screen container. Android draws edge-to-edge, so keep content clear of the
+ * system navigation bar (the header already handles the top).
+ */
 export function Screen({ children }: { children: ReactNode }) {
-  return <View style={styles.screen}>{children}</View>;
+  const insets = useSafeAreaInsets();
+  return <View style={[styles.screen, { paddingBottom: spacing.md + insets.bottom }]}>{children}</View>;
 }
 
 export function Button(props: {
